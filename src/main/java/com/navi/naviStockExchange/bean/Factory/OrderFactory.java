@@ -1,4 +1,4 @@
-package com.navi.naviStockExchange.services;
+package com.navi.naviStockExchange.bean.Factory;
 
 import com.navi.naviStockExchange.bean.Order;
 import com.navi.naviStockExchange.bean.Stock;

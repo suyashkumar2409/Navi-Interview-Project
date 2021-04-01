@@ -57,11 +57,11 @@ public class OrderBook {
                 Transaction transaction = new Transaction(buyOrder.getId(), sellOrder.getId(), sellOrder.getPrice(), quantityExecuted);
                 transactions.add(transaction);
 
-                if(candidateOrder.getQuantity() == quantityExecuted) {
+                candidateOrder.setQuantity(candidateOrder.getQuantity() - quantityExecuted);
+                order.setQuantity(order.getQuantity() - quantityExecuted);
+                if(candidateOrder.getQuantity() == 0) {
                     remove(candidateOrder);
                 }
-
-                order.setQuantity(order.getQuantity() - quantityExecuted);
             }
         }
         return transactions;

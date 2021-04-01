@@ -31,10 +31,13 @@ e.g. The following input (format:<order-id> <time> <stock> <buy/sell> <price> <q
 
 Should produce the following output (format:<buy-order-id> <sell-price> <qty> <sell-order-id>):
 
-#3 237.45 90 #2
-#3 236.00 20 #6
-#4 236.00 10 #6
-#5 236.00 20 #6
+\#3 237.45 90 #2
+
+\#3 236.00 20 #6
+
+\#4 236.00 10 #6
+
+\#5 236.00 20 #6
 
 Input needs to be read from a text file, and output should be printed to console. Your program should execute and take the location to the test file as parameter.
 

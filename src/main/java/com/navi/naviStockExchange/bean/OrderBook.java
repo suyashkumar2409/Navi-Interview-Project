@@ -46,7 +46,6 @@ public class OrderBook {
                 int quantityExecuted = Math.min(order.getQuantity(), candidateOrder.getQuantity());
 
                 Order buyOrder, sellOrder;
-                double sellPrice;
                 if(order.getOrderType().equals(OrderType.BUY)) {
                     buyOrder = order;
                     sellOrder = candidateOrder;
@@ -68,18 +67,6 @@ public class OrderBook {
         return transactions;
     }
 
-    private void remove(Order order) {
-        Long key = computeOrderKey(order);
-        TreeMap<Long, Set<Order>> ordersMap = getOrdersMap(order.getOrderType());
-
-        if(ordersMap.containsKey(key)) {
-            ordersMap.get(key).remove(order);
-            if(ordersMap.get(key).size() == 0) {
-                ordersMap.remove(key);
-            }
-        }
-    }
-
     private List<Order> computeCandidateOrders(Order order) {
         TreeMap<Long, Set<Order>> ordersMap = getOrdersMap(OrderType.getOpposite(order.getOrderType()));
         Long key = computeOrderKey(order);
@@ -94,6 +81,18 @@ public class OrderBook {
         List<Order> candidateOrders = candidateOrdersKeySet.stream().map(ordersMap::get).flatMap(Collection::stream)
                 .sorted(Comparator.comparing(Order::getId)).collect(Collectors.toList());
         return candidateOrders;
+    }
+
+    private void remove(Order order) {
+        Long key = computeOrderKey(order);
+        TreeMap<Long, Set<Order>> ordersMap = getOrdersMap(order.getOrderType());
+
+        if(ordersMap.containsKey(key)) {
+            ordersMap.get(key).remove(order);
+            if(ordersMap.get(key).size() == 0) {
+                ordersMap.remove(key);
+            }
+        }
     }
 
     private void insert(Order order) {

@@ -18,11 +18,11 @@ public class GeekTrust {
     public static void main(String[] args) {
         String filePath = args[0];
         File file = new File(filePath);
-        List<String> result = run(file);
+        List<String> result = computeTransactionResultsFromOrderInput(file);
         result.forEach(System.out::println);
     }
 
-    public static List<String> run(File file) {
+    public static List<String> computeTransactionResultsFromOrderInput(File file) {
         OrderFileParser parser = new OrderFileParser();
         parser.parse(file);
 

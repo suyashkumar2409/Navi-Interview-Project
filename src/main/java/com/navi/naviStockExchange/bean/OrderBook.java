@@ -46,7 +46,6 @@ public class OrderBook {
                 int quantityExecuted = Math.min(order.getQuantity(), candidateOrder.getQuantity());
 
                 Order buyOrder, sellOrder;
-                double sellPrice;
                 if(order.getOrderType().equals(OrderType.BUY)) {
                     buyOrder = order;
                     sellOrder = candidateOrder;
@@ -58,26 +57,14 @@ public class OrderBook {
                 Transaction transaction = new Transaction(buyOrder.getId(), sellOrder.getId(), sellOrder.getPrice(), quantityExecuted);
                 transactions.add(transaction);
 
-                if(candidateOrder.getQuantity() == quantityExecuted) {
+                candidateOrder.setQuantity(candidateOrder.getQuantity() - quantityExecuted);
+                order.setQuantity(order.getQuantity() - quantityExecuted);
+                if(candidateOrder.getQuantity() == 0) {
                     remove(candidateOrder);
                 }
-
-                order.setQuantity(order.getQuantity() - quantityExecuted);
             }
         }
         return transactions;
-    }
-
-    private void remove(Order order) {
-        Long key = computeOrderKey(order);
-        TreeMap<Long, Set<Order>> ordersMap = getOrdersMap(order.getOrderType());
-
-        if(ordersMap.containsKey(key)) {
-            ordersMap.get(key).remove(order);
-            if(ordersMap.get(key).size() == 0) {
-                ordersMap.remove(key);
-            }
-        }
     }
 
     private List<Order> computeCandidateOrders(Order order) {
@@ -94,6 +81,18 @@ public class OrderBook {
         List<Order> candidateOrders = candidateOrdersKeySet.stream().map(ordersMap::get).flatMap(Collection::stream)
                 .sorted(Comparator.comparing(Order::getId)).collect(Collectors.toList());
         return candidateOrders;
+    }
+
+    private void remove(Order order) {
+        Long key = computeOrderKey(order);
+        TreeMap<Long, Set<Order>> ordersMap = getOrdersMap(order.getOrderType());
+
+        if(ordersMap.containsKey(key)) {
+            ordersMap.get(key).remove(order);
+            if(ordersMap.get(key).size() == 0) {
+                ordersMap.remove(key);
+            }
+        }
     }
 
     private void insert(Order order) {

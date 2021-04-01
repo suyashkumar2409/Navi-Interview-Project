@@ -5,7 +5,6 @@ import org.junit.Assert;
 import org.junit.Test;
 
 import java.io.File;
-import java.io.InputStream;
 import java.util.List;
 import java.util.Objects;
 
@@ -21,7 +20,7 @@ public class IntegrationTest {
         String answerResource = "answer.txt";
 
         File inputFile = readFile(inputResource);
-        List<String> result = GeekTrust.run(inputFile);
+        List<String> result = GeekTrust.computeTransactionResultsFromOrderInput(inputFile);
 
         List<String> answer =  new FileParser().parse(readFile(answerResource));
         Assert.assertEquals(answer, result);

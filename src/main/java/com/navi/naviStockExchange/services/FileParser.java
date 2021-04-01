@@ -15,13 +15,11 @@ public class FileParser {
         List<String> input = new LinkedList<>();
         try {
             Scanner sc = new Scanner(file);
-//            LOGGER.info("Reading from file");
             while(sc.hasNextLine()) {
                 input.add(sc.nextLine());
             }
             sc.close();
         } catch (Exception e) {
-//            LOGGER.error("Error in reading file", e);
         }
         return input;
     }

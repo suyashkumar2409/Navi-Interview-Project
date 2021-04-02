@@ -29,36 +29,24 @@ public class OrderBook {
     }
 
     public List<Transaction> addOrder(Order order) {
-        List<Transaction> transactions = execute(order);
+        List<Transaction> transactions = match(order);
         if(order.getQuantity() > 0) {
             insert(order);
         }
         return transactions;
     }
 
-    private List<Transaction> execute(Order order) {
+    private List<Transaction> match(Order order) {
         List<Order> candidateOrders = computeCandidateOrders(order);
         List<Transaction> transactions = new LinkedList<>();
         if(!candidateOrders.isEmpty()) {
             Iterator<Order> candidateOrderIterator = candidateOrders.iterator();
             while(order.getQuantity() > 0 && candidateOrderIterator.hasNext()) {
                 Order candidateOrder = candidateOrderIterator.next();
-                int quantityExecuted = Math.min(order.getQuantity(), candidateOrder.getQuantity());
 
-                Order buyOrder, sellOrder;
-                if(order.getOrderType().equals(OrderType.BUY)) {
-                    buyOrder = order;
-                    sellOrder = candidateOrder;
-                } else {
-                    buyOrder = candidateOrder;
-                    sellOrder = order;
-                }
-
-                Transaction transaction = new Transaction(buyOrder.getId(), sellOrder.getId(), sellOrder.getPrice(), quantityExecuted);
+                Transaction transaction = computeTransaction(order, candidateOrder);
                 transactions.add(transaction);
 
-                candidateOrder.setQuantity(candidateOrder.getQuantity() - quantityExecuted);
-                order.setQuantity(order.getQuantity() - quantityExecuted);
                 if(candidateOrder.getQuantity() == 0) {
                     remove(candidateOrder);
                 }
@@ -67,20 +55,46 @@ public class OrderBook {
         return transactions;
     }
 
-    private List<Order> computeCandidateOrders(Order order) {
-        TreeMap<Long, Set<Order>> ordersMap = getOrdersMap(OrderType.getOpposite(order.getOrderType()));
-        Long key = computeOrderKey(order);
+    private Transaction computeTransaction(Order order, Order candidateOrder) {
+        int quantityExecuted = Math.min(order.getQuantity(), candidateOrder.getQuantity());
 
-        Set<Long> candidateOrdersKeySet;
+        Order buyOrder, sellOrder;
         if(order.getOrderType().equals(OrderType.BUY)) {
-            candidateOrdersKeySet = ordersMap.headMap(key, true).keySet();
+            buyOrder = order;
+            sellOrder = candidateOrder;
         } else {
-            candidateOrdersKeySet = ordersMap.tailMap(key, true).keySet();
+            buyOrder = candidateOrder;
+            sellOrder = order;
         }
 
-        List<Order> candidateOrders = candidateOrdersKeySet.stream().map(ordersMap::get).flatMap(Collection::stream)
-                .sorted(Comparator.comparing(Order::getId)).collect(Collectors.toList());
-        return candidateOrders;
+        candidateOrder.setQuantity(candidateOrder.getQuantity() - quantityExecuted);
+        order.setQuantity(order.getQuantity() - quantityExecuted);
+
+        return new Transaction(buyOrder.getId(), sellOrder.getId(), sellOrder.getPrice(), quantityExecuted);
+    }
+
+    private List<Order> computeCandidateOrders(Order order) {
+        TreeMap<Long, Set<Order>> ordersMap = getOppositeTypeOrderMap(order.getOrderType());
+        Set<Long> candidateOrdersKeySet = computeCandidateOrdersKeySet(ordersMap, order);
+        return candidateOrdersKeySet.stream().map(ordersMap::get).flatMap(Collection::stream)
+                .collect(Collectors.toList());
+    }
+
+    private TreeMap<Long, Set<Order>> getOppositeTypeOrderMap(OrderType orderType) {
+        return getOrdersMap(OrderType.getOpposite(orderType));
+    }
+
+    private Set<Long> computeCandidateOrdersKeySet(TreeMap<Long, Set<Order>> ordersMap, Order order) {
+        OrderType orderType = order.getOrderType();
+        Set<Long> candidateOrdersKeySet = null;
+        Long key = computeOrderKey(order);
+
+        if(orderType.equals(OrderType.BUY)) {
+            candidateOrdersKeySet = ordersMap.headMap(key, true).keySet();
+        } else {
+            candidateOrdersKeySet = ordersMap.tailMap(key, true).descendingKeySet();
+        }
+        return candidateOrdersKeySet;
     }
 
     private void remove(Order order) {
@@ -100,6 +114,7 @@ public class OrderBook {
         insert(ordersMap, order);
     }
 
+//  this is done to ensure no problems with using double as key -> instead, assume two decimal points, multiply by 100 and save as long
     private Long computeOrderKey(Order order) {
         return (long)(order.getPrice()* Constants.priceKeyMultiplier);
     }

@@ -15,12 +15,12 @@ import java.util.Objects;
 
 public class IntegrationTest {
     @Test
-    public void integrationTest() {
+    public void integrationTest() throws Exception {
         String inputResource = "input.txt";
         String answerResource = "answer.txt";
 
         File inputFile = readFile(inputResource);
-        List<String> result = GeekTrust.computeTransactionResultsFromOrderInput(inputFile);
+        List<String> result = GeekTrust.computeTransactionResultsFromOrdersFile(inputFile);
 
         List<String> answer =  new FileParser().parse(readFile(answerResource));
         Assert.assertEquals(answer, result);

@@ -1,6 +1,7 @@
 package com.navi.naviStockExchange.services;
 
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Scanner;
@@ -11,16 +12,15 @@ import java.util.Scanner;
  */
 
 public class FileParser {
-    public List<String> parse(File file) {
+    public List<String> parse(File file) throws FileNotFoundException {
         List<String> input = new LinkedList<>();
-        try {
-            Scanner sc = new Scanner(file);
-            while(sc.hasNextLine()) {
-                input.add(sc.nextLine());
-            }
-            sc.close();
-        } catch (Exception e) {
+
+        Scanner sc = new Scanner(file);
+        while (sc.hasNextLine()) {
+            input.add(sc.nextLine());
         }
+        sc.close();
+
         return input;
     }
 }

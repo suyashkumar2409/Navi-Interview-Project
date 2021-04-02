@@ -7,8 +7,6 @@ package com.navi.naviStockExchange.bean;
 
 import com.navi.naviStockExchange.enums.OrderType;
 
-import java.util.Date;
-
 public class Order {
     private Long id;
     private String timeStamp;
@@ -26,27 +24,27 @@ public class Order {
         this.quantity = quantity;
     }
 
-    public Stock getStock() {
+    Stock getStock() {
         return stock;
     }
 
-    public OrderType getOrderType() {
+    OrderType getOrderType() {
         return orderType;
     }
 
-    public double getPrice() {
+    double getPrice() {
         return price;
     }
 
-    public Long getId() {
+    Long getId() {
         return id;
     }
 
-    public int getQuantity() {
+    int getQuantity() {
         return quantity;
     }
 
-    public void setQuantity(int quantity) {
+    void setQuantity(int quantity) {
         this.quantity = quantity;
     }
 

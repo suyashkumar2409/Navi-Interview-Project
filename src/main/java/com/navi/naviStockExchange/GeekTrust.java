@@ -3,7 +3,7 @@ package com.navi.naviStockExchange;
 import com.navi.naviStockExchange.bean.Order;
 import com.navi.naviStockExchange.bean.StockExchange;
 import com.navi.naviStockExchange.bean.Transaction;
-import com.navi.naviStockExchange.services.OrderFileParser;
+import com.navi.naviStockExchange.services.OrdersFileParser;
 
 import java.io.File;
 import java.util.List;
@@ -18,18 +18,23 @@ public class GeekTrust {
     public static void main(String[] args) {
         String filePath = args[0];
         File file = new File(filePath);
-        List<String> result = computeTransactionResultsFromOrderInput(file);
+        List<String> result = computeTransactionResultsFromOrdersFile(file);
         result.forEach(System.out::println);
     }
 
-    public static List<String> computeTransactionResultsFromOrderInput(File file) {
-        OrderFileParser parser = new OrderFileParser();
-        parser.parse(file);
+    public static List<String> computeTransactionResultsFromOrdersFile(File file) {
+        OrdersFileParser parser = null;
+        try {
+            parser = new OrdersFileParser();
+            parser.parse(file);
+        } catch (Exception e) {
+            e.printStackTrace();
+            System.exit(1);
+        }
 
-        StockExchange stockExchange = new StockExchange(parser.getStockDatabase());
+        StockExchange stockExchange = new StockExchange();
         List<Order> orders = parser.getOrders();
-
-        stockExchange.addAllOrders(orders);
+        stockExchange.matchOrders(orders);
         List<Transaction> transactions = stockExchange.getExecutedTransactions();
 
         return transactions.stream().map(Transaction::toString).collect(Collectors.toList());

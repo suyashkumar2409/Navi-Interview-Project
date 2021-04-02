@@ -1,7 +1,5 @@
 package com.navi.naviStockExchange.bean;
 
-import com.navi.naviStockExchange.services.StockDatabase;
-
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
@@ -13,13 +11,9 @@ import java.util.Map;
  */
 
 public class StockExchange {
-    private final StockDatabase stockDatabase;
     private Map<Stock, OrderBook> stockOrderBook = new HashMap<>();
     private List<Transaction> transactions = new LinkedList<>();
 
-    public StockExchange(StockDatabase stockDatabase) {
-        this.stockDatabase = stockDatabase;
-    }
 
     public void addOrder(Order order) {
         Stock stock = order.getStock();
@@ -31,7 +25,7 @@ public class StockExchange {
         transactions.addAll(transactionsExecuted);
     }
 
-    public void addAllOrders(List<Order> orders) {
+    public void matchOrders(List<Order> orders) {
         orders.forEach(this::addOrder);
     }
 

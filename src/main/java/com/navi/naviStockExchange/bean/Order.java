@@ -54,4 +54,8 @@ public class Order {
         }
         return ((Order) a).id.equals(this.id);
     }
+
+    public String toString() {
+        return id+" "+quantity;
+    }
 }

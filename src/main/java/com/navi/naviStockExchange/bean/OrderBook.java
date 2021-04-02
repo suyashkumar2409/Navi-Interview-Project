@@ -13,14 +13,14 @@ import java.util.stream.Collectors;
 
 public class OrderBook {
     private Stock stock;
-    private TreeMap<Long, Set<Order>> buyOrders = new TreeMap<>();
-    private TreeMap<Long, Set<Order>> sellOrders = new TreeMap<>();
+    private TreeMap<Long, List<Order>> buyOrders = new TreeMap<>();
+    private TreeMap<Long, List<Order>> sellOrders = new TreeMap<>();
 
     public OrderBook(Stock stock) {
         this.stock = stock;
     }
 
-    public TreeMap<Long, Set<Order>> getOrdersMap(OrderType orderType) {
+    public TreeMap<Long, List<Order>> getOrdersMap(OrderType orderType) {
         if(orderType.equals(OrderType.BUY)) {
             return buyOrders;
         } else {
@@ -74,32 +74,33 @@ public class OrderBook {
     }
 
     private List<Order> computeCandidateOrders(Order order) {
-        TreeMap<Long, Set<Order>> ordersMap = getOppositeTypeOrderMap(order.getOrderType());
-        Set<Long> candidateOrdersKeySet = computeCandidateOrdersKeySet(ordersMap, order);
-        return candidateOrdersKeySet.stream().map(ordersMap::get).flatMap(Collection::stream)
-                .collect(Collectors.toList());
+        TreeMap<Long, List<Order>> ordersMap = getOppositeTypeOrderMap(order.getOrderType());
+        List<Long> candidateOrdersKeySet = computeCandidateOrdersKeys(ordersMap, order);
+        return candidateOrdersKeySet.stream().map(ordersMap::get).flatMap(Collection::stream).collect(Collectors.toList());
     }
 
-    private TreeMap<Long, Set<Order>> getOppositeTypeOrderMap(OrderType orderType) {
+    private TreeMap<Long, List<Order>> getOppositeTypeOrderMap(OrderType orderType) {
         return getOrdersMap(OrderType.getOpposite(orderType));
     }
 
-    private Set<Long> computeCandidateOrdersKeySet(TreeMap<Long, Set<Order>> ordersMap, Order order) {
+    private List<Long> computeCandidateOrdersKeys(TreeMap<Long, List<Order>> ordersMap, Order order) {
         OrderType orderType = order.getOrderType();
-        Set<Long> candidateOrdersKeySet = null;
+        List<Long> candidateOrdersKeys = null;
         Long key = computeOrderKey(order);
 
         if(orderType.equals(OrderType.BUY)) {
-            candidateOrdersKeySet = ordersMap.headMap(key, true).keySet();
+//          get Sell candidates in ascending order (lowest sell price prioritised)
+            candidateOrdersKeys = new LinkedList<>(ordersMap.headMap(key, true).keySet());
         } else {
-            candidateOrdersKeySet = ordersMap.tailMap(key, true).descendingKeySet();
+//          get Buy candidates in descending order (highest buy price prioritised)
+            candidateOrdersKeys = new LinkedList<>(ordersMap.tailMap(key, true).descendingKeySet());
         }
-        return candidateOrdersKeySet;
+        return candidateOrdersKeys;
     }
 
     private void remove(Order order) {
         Long key = computeOrderKey(order);
-        TreeMap<Long, Set<Order>> ordersMap = getOrdersMap(order.getOrderType());
+        TreeMap<Long, List<Order>> ordersMap = getOrdersMap(order.getOrderType());
 
         if(ordersMap.containsKey(key)) {
             ordersMap.get(key).remove(order);
@@ -110,7 +111,7 @@ public class OrderBook {
     }
 
     private void insert(Order order) {
-        TreeMap<Long, Set<Order>> ordersMap = getOrdersMap(order.getOrderType());
+        TreeMap<Long, List<Order>> ordersMap = getOrdersMap(order.getOrderType());
         insert(ordersMap, order);
     }
 
@@ -119,10 +120,10 @@ public class OrderBook {
         return (long)(order.getPrice()* Constants.priceKeyMultiplier);
     }
 
-    private void insert(TreeMap<Long, Set<Order>> ordersMap, Order order) {
+    private void insert(TreeMap<Long, List<Order>> ordersMap, Order order) {
         Long key = computeOrderKey(order);
         if(!ordersMap.containsKey(key)) {
-            ordersMap.put(key, new HashSet<>());
+            ordersMap.put(key, new LinkedList<>());
         }
         ordersMap.get(key).add(order);
     }

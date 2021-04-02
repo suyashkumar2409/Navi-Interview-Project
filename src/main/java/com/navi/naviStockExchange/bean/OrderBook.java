@@ -76,7 +76,8 @@ public class OrderBook {
     private List<Order> computeCandidateOrders(Order order) {
         TreeMap<Long, Set<Order>> ordersMap = getOppositeTypeOrderMap(order.getOrderType());
         Set<Long> candidateOrdersKeySet = computeCandidateOrdersKeySet(ordersMap, order);
-        return getCandidateOrdersByOrderId(ordersMap, candidateOrdersKeySet);
+        return candidateOrdersKeySet.stream().map(ordersMap::get).flatMap(Collection::stream)
+                .collect(Collectors.toList());
     }
 
     private TreeMap<Long, Set<Order>> getOppositeTypeOrderMap(OrderType orderType) {
@@ -91,15 +92,9 @@ public class OrderBook {
         if(orderType.equals(OrderType.BUY)) {
             candidateOrdersKeySet = ordersMap.headMap(key, true).keySet();
         } else {
-            candidateOrdersKeySet = ordersMap.tailMap(key, true).keySet();
+            candidateOrdersKeySet = ordersMap.tailMap(key, true).descendingKeySet();
         }
         return candidateOrdersKeySet;
-    }
-
-    private List<Order> getCandidateOrdersByOrderId(TreeMap<Long, Set<Order>> ordersMap, Set<Long> candidateOrdersKeySet) {
-        List<Order> candidateOrders = candidateOrdersKeySet.stream().map(ordersMap::get).flatMap(Collection::stream)
-                .sorted(Comparator.comparing(Order::getId)).collect(Collectors.toList());
-        return candidateOrders;
     }
 
     private void remove(Order order) {
